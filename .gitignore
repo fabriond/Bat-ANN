@@ -1,5 +1,4 @@
 *.plt
 /.vscode/
 *.exe
-!make.exe
 *.txt
