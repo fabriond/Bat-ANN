@@ -32,7 +32,50 @@ double fitness(vector<double> pos){
     }
     return mse/trainSet.size();
 }
-void genGraph(vector<double> pos, int number);
+
+void genGraph(vector<double> pos, int number){
+    Network n(topology, pos);
+    //Plot the results
+	vector<float> x;
+	vector<float> y1, y2;
+
+	for (int i = 0; i < 1000; i++) {
+        vector<double> inputs;
+        inputs.push_back(i * 2 * PI / 1000);
+		x.push_back(i * 2 * PI / 1000);
+		y1.push_back(expectedOutputs(inputs).getValue(0,0));
+		y2.push_back(n.feedForward(inputs).getValue(0,0));
+	}
+
+    std::stringstream ss;
+    ss << "./plots/gnuplot"<< number <<".plt";
+    string filepath = ss.str();
+
+	FILE * gp = fopen(filepath.c_str(), "w");
+    fprintf(gp, "set terminal wxt size 600,400 \n");
+    fprintf(gp, "set grid \n");
+    fprintf(gp, "set title '%s' \n", "f(x) = sin (x)");
+    fprintf(gp, "set style line 1 lt 3 pt 7 ps 0.1 lc rgb 'green' lw 1 \n");
+    fprintf(gp, "set style line 2 lt 3 pt 7 ps 0.1 lc rgb 'red' lw 1 \n");
+    fprintf(gp, "plot '-' w p ls 1 title 'sin(x)', '-' w p ls 2 title 'network(x)' \n");
+
+	//Exact f(x) = sin(x) -> Green Graph
+	for (int k = 0; k < x.size(); k++) {
+		fprintf(gp, "%f %f \n", x[k], y1[k]);
+	}
+	fprintf(gp, "e\n");
+
+	//Neural Network Approximate f(x) = sin(x) -> Red Graph
+	for (int k = 0; k < x.size(); k++) {
+		fprintf(gp, "%f %f \n", x[k], y2[k]);
+	}
+	fprintf(gp, "e\n");
+	
+	fflush(gp);
+
+	fclose(gp);
+}
+
 Bat train(){
     for(int i=0;i<Train_Set_Size;i++){
         vector<double> inputs;
@@ -65,49 +108,6 @@ Bat train(){
 
     cout << "Iterations: " << swarm.getIterationCount() << "; " << best << endl;
     return best;
-}
-
-void genGraph(vector<double> pos, int number){
-    Network n(topology, pos);
-    //Plot the results
-	vector<float> x;
-	vector<float> y1, y2;
-
-	for (int i = 0; i < 1000; i++) {
-        vector<double> inputs;
-        inputs.push_back(i * 2 * PI / 1000);
-		x.push_back(i * 2 * PI / 1000);
-		y1.push_back(expectedOutputs(inputs).getValue(0,0));
-		y2.push_back(n.feedForward(inputs).getValue(0,0));
-	}
-
-    std::stringstream ss;
-    ss << "./plots/gnuplot"<< number <<".plt";
-    string filepath = ss.str();
-
-	FILE * gp = fopen(filepath.c_str(), "w");
-    fprintf(gp, "set terminal wxt size 600,400 \n");
-    fprintf(gp, "set grid \n");
-    fprintf(gp, "set title '%s' \n", "f(x) = sin (x)");
-    fprintf(gp, "set style line 1 lt 3 pt 7 ps 0.1 lc rgb 'green' lw 1 \n");
-    fprintf(gp, "set style line 2 lt 3 pt 7 ps 0.1 lc rgb 'red' lw 1 \n");
-    fprintf(gp, "plot '-' w p ls 1, '-' w p ls 2 \n");
-
-	//Exact f(x) = sin(x) -> Green Graph
-	for (int k = 0; k < x.size(); k++) {
-		fprintf(gp, "%f %f \n", x[k], y1[k]);
-	}
-	fprintf(gp, "e\n");
-
-	//Neural Network Approximate f(x) = sin(x) -> Red Graph
-	for (int k = 0; k < x.size(); k++) {
-		fprintf(gp, "%f %f \n", x[k], y2[k]);
-	}
-	fprintf(gp, "e\n");
-	
-	fflush(gp);
-
-	fclose(gp);
 }
 
 int main(int argc, char **argv){
